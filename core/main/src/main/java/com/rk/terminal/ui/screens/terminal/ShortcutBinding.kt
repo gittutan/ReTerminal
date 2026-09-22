@@ -1,6 +1,7 @@
 package com.rk.terminal.ui.screens.terminal
 
 import android.view.KeyEvent
+import com.rk.resources.strings
 
 /**
  * Represents a configurable keyboard shortcut binding.
@@ -37,8 +38,8 @@ data class ShortcutBinding(
     }
 
     /** Human-readable display string */
-    fun toDisplayString(): String {
-        if (isEmpty) return "Not set"
+    fun toDisplayString(notSetText: String): String {
+        if (isEmpty) return notSetText
         val parts = mutableListOf<String>()
         if (ctrl) parts.add("Ctrl")
         if (shift) parts.add("Shift")
@@ -136,5 +137,14 @@ enum class ShortcutAction(
     SWITCH_SESSION_NEXT(
         prefKey = "shortcut_switch_next",
         default = ShortcutBinding(ctrl = true, shift = true, keyCode = KeyEvent.KEYCODE_DPAD_RIGHT),
-    ),
+    );
+
+    val labelRes: Int
+        get() = when (this) {
+            PASTE -> strings.shortcut_paste
+            NEW_SESSION -> strings.shortcut_new_session
+            CLOSE_SESSION -> strings.shortcut_close_session
+            SWITCH_SESSION_PREV -> strings.shortcut_switch_prev
+            SWITCH_SESSION_NEXT -> strings.shortcut_switch_next
+        }
 }

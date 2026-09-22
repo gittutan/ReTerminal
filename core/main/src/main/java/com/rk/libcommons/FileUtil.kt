@@ -14,16 +14,16 @@ fun Context.localDir(): File {
     }
 }
 
-fun Context.alpineDir(): File {
-    return localDir().child("alpine").also {
+fun Context.ubuntuDir(): File {
+    return localDir().child("ubuntu").also {
         if (!it.exists()) {
             it.mkdirs()
         }
     }
 }
 
-fun Context.alpineHomeDir(): File {
-    return alpineDir().child("root").also {
+fun Context.ubuntuHomeDir(): File {
+    return ubuntuDir().child("root").also {
         if (!it.exists()) {
             it.mkdirs()
         }

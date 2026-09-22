@@ -1,15 +1,16 @@
-ALPINE_DIR=$PREFIX/local/alpine
+UBUNTU_DIR=$PREFIX/local/ubuntu
 
-mkdir -p $ALPINE_DIR
+mkdir -p "$UBUNTU_DIR" || exit 1
 
-if [ -z "$(ls -A "$ALPINE_DIR" | grep -vE '^(root|tmp)$')" ]; then
-    tar -xf "$PREFIX/files/alpine.tar.gz" -C "$ALPINE_DIR"
-fi
-
-if [ -f "$BIN/rm" ]; then
-    rm -f "$ALPINE_DIR/bin/rm"
-    cp "$BIN/rm" "$ALPINE_DIR/bin/rm"
-    chmod +x "$ALPINE_DIR/bin/rm"
+if [ ! -f "$UBUNTU_DIR/.rootfs-ready" ]; then
+    tar -xzf "$PREFIX/files/ubuntu.tar.gz" -C "$UBUNTU_DIR" || exit 1
+    # Ubuntu Base has no CA certificates; APT still verifies Ubuntu archive signatures.
+    sed -i \
+        -e 's|http://ports\.ubuntu\.com/ubuntu-ports/|http://mirrors.cloud.tencent.com/ubuntu-ports/|g' \
+        -e 's|http://archive\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
+        -e 's|http://security\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
+        "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
+    touch "$UBUNTU_DIR/.rootfs-ready" || exit 1
 fi
 
 ARGS="--kill-on-exit"
@@ -57,16 +58,16 @@ fi
 ARGS="$ARGS -b $PREFIX"
 ARGS="$ARGS -b /sys"
 
-if [ ! -d "$PREFIX/local/alpine/tmp" ]; then
- mkdir -p "$PREFIX/local/alpine/tmp"
- chmod 1777 "$PREFIX/local/alpine/tmp"
+if [ ! -d "$UBUNTU_DIR/tmp" ]; then
+ mkdir -p "$UBUNTU_DIR/tmp"
+ chmod 1777 "$UBUNTU_DIR/tmp"
 fi
-ARGS="$ARGS -b $PREFIX/local/alpine/tmp:/dev/shm"
+ARGS="$ARGS -b $UBUNTU_DIR/tmp:/dev/shm"
 
-ARGS="$ARGS -r $PREFIX/local/alpine"
+ARGS="$ARGS -r $UBUNTU_DIR"
 ARGS="$ARGS -0"
 ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-$PROOT $ARGS sh $PREFIX/local/bin/init "$@"
+"$PROOT" $ARGS /bin/sh "$PREFIX/local/bin/init" "$@"

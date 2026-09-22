@@ -101,12 +101,12 @@ fun TerminalDrawer(
                         navController.navigate(MainActivityRoutes.Settings.route)
                         keyboardController?.hide()
                     }) {
-                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
+                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = stringResource(strings.settings))
                     }
 
                     // Add Session button
                     IconButton(onClick = onAddSession) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(strings.shortcut_new_session))
                     }
                 }
             }
@@ -196,7 +196,7 @@ fun TerminalDrawer(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Outlined.Delete,
-                                            contentDescription = null,
+                                            contentDescription = stringResource(strings.shortcut_close_session),
                                             modifier = Modifier.size(18.dp),
                                             tint = MaterialTheme.colorScheme.error
                                         )

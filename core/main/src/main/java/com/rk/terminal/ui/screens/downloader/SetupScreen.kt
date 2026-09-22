@@ -82,9 +82,9 @@ fun SetupScreen(
     if (showExecModeDialog) {
         AlertDialog(
             onDismissRequest = { },
-            title = { Text("Root Access Detected") },
+            title = { Text(stringResource(strings.root_detected)) },
             text = {
-                Text("Root access was found. Run the terminal with chroot (faster, requires root for every session) or proot (no root required, slightly slower)? You can change this later in Settings.")
+                Text(stringResource(strings.root_detected_desc))
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -95,7 +95,7 @@ fun SetupScreen(
                     } else {
                         extractionStarted = true
                     }
-                }) { Text("Chroot") }
+                }) { Text("chroot") }
             },
             dismissButton = {
                 TextButton(onClick = {
@@ -106,7 +106,7 @@ fun SetupScreen(
                     } else {
                         extractionStarted = true
                     }
-                }) { Text("Proot") }
+                }) { Text("PRoot") }
             }
         )
     }
@@ -118,21 +118,23 @@ fun SetupScreen(
                 val abis = Build.SUPPORTED_ABIS
                 val abi = abis.firstOrNull {
                     it in listOf("arm64-v8a", "armeabi-v7a", "x86_64")
-                } ?: throw RuntimeException("Unsupported CPU architectures: ${abis.joinToString()}")
-                val alpineArch = when (abi) {
-                    "arm64-v8a" -> "aarch64"
+                } ?: throw RuntimeException(context.getString(strings.unsupported_cpu_architectures, abis.joinToString()))
+                val ubuntuArch = when (abi) {
+                    "arm64-v8a" -> "arm64"
                     "armeabi-v7a" -> "armhf"
-                    "x86_64" -> "x86_64"
-                    else -> throw RuntimeException("Unsupported ABI: $abi")
+                    "x86_64" -> "amd64"
+                    else -> throw RuntimeException(context.getString(strings.unsupported_abi, abi))
                 }
-                val assetName = "alpine-$alpineArch.tar.gz.rootfs"
-                val outputFile = context.filesDir.child("alpine.tar.gz")
+                val assetName = "ubuntu-$ubuntuArch.tar.gz.rootfs"
+                val outputFile = context.filesDir.child("ubuntu.tar.gz")
                 if (!outputFile.exists() || outputFile.length() == 0L) {
+                    val temporaryFile = context.filesDir.child("ubuntu.tar.gz.part")
                     context.assets.open(assetName).use { input ->
-                        FileOutputStream(outputFile).use { output ->
+                        FileOutputStream(temporaryFile).use { output ->
                             input.copyTo(output)
                         }
                     }
+                    check(temporaryFile.renameTo(outputFile)) { context.getString(strings.rootfs_save_failed) }
                 }
                 withContext(Dispatchers.Main) {
                     Rootfs.isInstalled.value = true
@@ -153,9 +155,9 @@ fun SetupScreen(
         if (!ready) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (error != null) {
-                    Text("Setup Failed: $error", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(strings.setup_failed, error.orEmpty()), color = MaterialTheme.colorScheme.error)
                 } else if (!rootChecked) {
-                    Text("Checking root access...", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(strings.checking_root), style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator()
                 } else if (!showExecModeDialog) {

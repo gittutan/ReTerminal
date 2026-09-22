@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,8 +48,6 @@ fun TerminalScreen(
     terminalViewModel: TerminalViewModel = viewModel(mainActivity)
 ) {
     val context = LocalContext.current
-    val systemDark = isSystemInDarkTheme()
-    val isDarkActive = if (mainViewModel.followSystemTheme) systemDark else mainViewModel.isDarkMode
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val configuration = LocalConfiguration.current
@@ -59,10 +56,10 @@ fun TerminalScreen(
 
     val sessionBinder = mainViewModel.sessionBinder
     
-    LaunchedEffect(isDarkActive) {
+    LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             if (context.filesDir.child("background").exists().not()) {
-                TerminalUtils.darkText.value = !isDarkActive
+                TerminalUtils.darkText.value = false
                 TerminalUtils.hasCustomBackground.value = false
             } else {
                 TerminalUtils.hasCustomBackground.value = true
@@ -83,7 +80,7 @@ fun TerminalScreen(
         scope.launch { drawerState.close() }
     }
 
-    val isDarkIcons = if (drawerState.isClosed) TerminalUtils.darkText.value else !isDarkActive
+    val isDarkIcons = drawerState.isClosed && TerminalUtils.darkText.value
     SetStatusBarTextColor(isDarkIcons = isDarkIcons)
 
     if (showAddDialog && sessionBinder != null) {
@@ -101,7 +98,7 @@ fun TerminalScreen(
                 val terminal = terminalViewModel.terminalView ?: return@AddSessionDialog
                 val client = TerminalBackEnd(terminal, mainActivity)
                 val pendingCommand = MkSession.buildCustomPendingCommand(context, custom)
-                sessionBinder.createSession(custom.name, client, WorkingMode.ALPINE, pendingCommand)
+                sessionBinder.createSession(custom.name, client, WorkingMode.UBUNTU, pendingCommand)
                 terminalViewModel.changeSession(context, sessionBinder, custom.name)
                 showAddDialog = false
             }
@@ -192,9 +189,9 @@ private fun AddSessionDialog(
     BasicAlertDialog(onDismissRequest = onDismiss) {
         PreferenceGroup {
             SettingsCard(
-                title = { Text("Alpine") },
-                description = { Text(stringResource(strings.alpine_desc)) },
-                onClick = { onCreateSession(WorkingMode.ALPINE) }
+                title = { Text("Ubuntu") },
+                description = { Text(stringResource(strings.ubuntu_desc)) },
+                onClick = { onCreateSession(WorkingMode.UBUNTU) }
             )
             SettingsCard(
                 title = { Text("Android") },

@@ -13,7 +13,7 @@ import android.provider.DocumentsContract
 import android.provider.DocumentsProvider
 import android.util.Log
 import android.webkit.MimeTypeMap
-import com.rk.libcommons.alpineHomeDir
+import com.rk.libcommons.ubuntuHomeDir
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -24,7 +24,7 @@ import com.rk.terminal.R
 
 class AlpineDocumentProvider : DocumentsProvider() {
 
-    private val baseDir: File get() = context!!.alpineHomeDir()
+    private val baseDir: File get() = context!!.ubuntuHomeDir()
 
     override fun queryRoots(projection: Array<String>?): Cursor {
         val result = MatrixCursor(projection ?: DEFAULT_ROOT_PROJECTION)

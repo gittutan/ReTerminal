@@ -63,7 +63,7 @@ fun SettingsCard(
 }
 
 object WorkingMode {
-    const val ALPINE = 0
+    const val UBUNTU = 0
     const val ANDROID = 1
 }
 
@@ -96,14 +96,14 @@ fun Settings(
     ) {
         PreferenceGroup(heading = stringResource(strings.default_working_mode)) {
             WorkingModeOption(
-                title = "Alpine",
-                description = stringResource(strings.alpine_desc),
-                selected = !defaultIsCustom && selectedWorkingMode == WorkingMode.ALPINE
+                title = "Ubuntu",
+                description = stringResource(strings.ubuntu_desc),
+                selected = !defaultIsCustom && selectedWorkingMode == WorkingMode.UBUNTU
             ) {
                 defaultIsCustom = false
                 Settings.default_is_custom = false
-                selectedWorkingMode = WorkingMode.ALPINE
-                Settings.working_Mode = WorkingMode.ALPINE
+                selectedWorkingMode = WorkingMode.UBUNTU
+                Settings.working_Mode = WorkingMode.UBUNTU
             }
             WorkingModeOption(
                 title = "Android",
@@ -129,12 +129,12 @@ fun Settings(
             }
         }
 
-        PreferenceGroup(heading = "Execution Mode") {
-            ExecModeOption("Chroot", "Requires root, faster, real bind mounts", ExecMode.CHROOT, selectedExecMode) {
+        PreferenceGroup(heading = stringResource(strings.execution_mode)) {
+            ExecModeOption("chroot", stringResource(strings.chroot_desc), ExecMode.CHROOT, selectedExecMode) {
                 selectedExecMode = it
                 Rootfs.setExecMode(it)
             }
-            ExecModeOption("Proot", "No root required, slightly slower", ExecMode.PROOT, selectedExecMode) {
+            ExecModeOption("PRoot", stringResource(strings.proot_desc), ExecMode.PROOT, selectedExecMode) {
                 selectedExecMode = it
                 Rootfs.setExecMode(it)
             }
@@ -155,7 +155,7 @@ fun Settings(
             }
         }
 
-        PreferenceGroup(heading = "Custom Sessions") {
+        PreferenceGroup(heading = stringResource(strings.custom_sessions)) {
             customSessions.forEach { session ->
                 SettingsCard(
                     title = { Text(session.name) },
@@ -168,13 +168,13 @@ fun Settings(
                             defaultCustomId = CustomSessions.getDefaultId()
                             defaultIsCustom = Settings.default_is_custom
                         }) {
-                            Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
+                            Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(strings.delete))
                         }
                     }
                 )
             }
             SettingsCard(
-                title = { Text("Add Custom Session") },
+                title = { Text(stringResource(strings.add_custom_session)) },
                 onClick = { showAddCustomSession = true },
                 endWidget = {
                     Icon(

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Resources
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.color.DynamicColors
-import com.rk.libcommons.isDarkMode
 import com.rk.settings.Settings
 import com.rk.terminal.R
 
@@ -29,10 +28,8 @@ object ThemeManager {
             AppCompatDelegate.setDefaultNightMode(nightMode)
         }
 
-        val isDark = if (Settings.follow_system_theme) isDarkMode(activity) else Settings.dark_mode
-
         // apply OLED theme if dark mode and OLED setting is enable
-        if (isDark && Settings.amoled) {
+        if (Settings.amoled) {
             if (Settings.monet) {
                 activity.setTheme(R.style.Theme_Karbon_Oled_Monet)
                 return

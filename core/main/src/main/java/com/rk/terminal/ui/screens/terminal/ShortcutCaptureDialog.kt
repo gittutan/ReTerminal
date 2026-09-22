@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalContext
 import com.rk.resources.strings
 import com.rk.settings.Settings
 
@@ -49,6 +50,7 @@ fun ShortcutCaptureDialog(
     onDismiss: () -> Unit,
     onConfirm: (ShortcutBinding) -> Unit,
 ) {
+    val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
     var captured by remember { mutableStateOf<ShortcutBinding?>(null) }
     var modifierHint by remember { mutableStateOf("") }
@@ -81,7 +83,7 @@ fun ShortcutCaptureDialog(
                     }
 
                     if (ShortcutBinding.isReservedKey(keyCode)) {
-                        conflictMessage = "This key is reserved by the system"
+                        conflictMessage = context.getString(strings.shortcut_reserved_key)
                         return@onPreviewKeyEvent true
                     }
 
@@ -94,7 +96,7 @@ fun ShortcutCaptureDialog(
                         .firstOrNull { Settings.getShortcutBinding(it) == binding }
 
                     if (conflict != null) {
-                        conflictMessage = "Conflicts with: ${conflict.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() }}"
+                        conflictMessage = context.getString(strings.shortcut_conflict, context.getString(conflict.labelRes))
                         captured = binding
                     } else {
                         conflictMessage = null
@@ -125,7 +127,7 @@ fun ShortcutCaptureDialog(
                         .height(64.dp),
                 ) {
                     val displayText = when {
-                        captured != null -> captured!!.toDisplayString()
+                        captured != null -> captured!!.toDisplayString(stringResource(strings.shortcut_not_set))
                         modifierHint.isNotEmpty() -> modifierHint
                         else -> stringResource(strings.shortcut_capture_hint)
                     }

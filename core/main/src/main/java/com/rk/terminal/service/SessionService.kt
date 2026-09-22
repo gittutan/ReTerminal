@@ -175,7 +175,7 @@ class SessionService : Service() {
             .addAction(
                 NotificationCompat.Action.Builder(
                     null,
-                    "EXIT",
+                    applicationContext.getString(strings.exit),
                     exitPendingIntent
                 ).build()
             )
@@ -189,10 +189,10 @@ class SessionService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Session Service",
+            applicationContext.getString(strings.session_service),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Notification for Terminal Service"
+            description = applicationContext.getString(strings.session_service_desc)
         }
         notificationManager.createNotificationChannel(channel)
     }
@@ -204,6 +204,6 @@ class SessionService : Service() {
 
     private fun getNotificationContentText(): String {
         val count = sessions.size
-        return if (count == 1) "1 session running" else "$count sessions running"
+        return applicationContext.resources.getQuantityString(com.rk.resources.R.plurals.sessions_running, count, count)
     }
 }

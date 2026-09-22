@@ -9,12 +9,11 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -42,7 +41,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     val viewModel: MainViewModel by viewModels()
     private val terminalViewModel: TerminalViewModel by viewModels()
     private var isKeyboardVisible = false
@@ -69,10 +68,7 @@ class MainActivity : ComponentActivity() {
         handleViewIntent(intent)
 
         setContent {
-            val systemDark = isSystemInDarkTheme()
-            val isDarkThemeActive = if (viewModel.followSystemTheme) systemDark else viewModel.isDarkMode
             KarbonTheme(
-                darkTheme = isDarkThemeActive,
                 highContrastDarkTheme = viewModel.isAmoled,
                 dynamicColor = viewModel.isMonet,
                 themePalette = viewModel.themePalette

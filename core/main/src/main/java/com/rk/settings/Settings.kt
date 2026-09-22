@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import com.rk.libcommons.application
+import com.rk.resources.getString
+import com.rk.resources.strings
 import com.rk.terminal.ui.screens.settings.WorkingMode
 import com.rk.terminal.ui.screens.settings.InputMode
 
@@ -39,40 +41,7 @@ object Settings {
         set(value) = Preference.setBoolean(key = "github",value)
 
 
-    var follow_system_theme
-        get() = Preference.getBoolean(key = "follow_system_theme", default = true)
-        set(value) = Preference.setBoolean(key = "follow_system_theme", value)
-
-    var dark_mode
-        get() = Preference.getBoolean(key = "dark_mode", default = false)
-        set(value) = Preference.setBoolean(key = "dark_mode", value)
-
-    var default_night_mode: Int
-        get() {
-            return if (follow_system_theme) {
-                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            } else if (dark_mode) {
-                AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                AppCompatDelegate.MODE_NIGHT_NO
-            }
-        }
-        set(value) {
-            when (value) {
-                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM -> {
-                    follow_system_theme = true
-                }
-                AppCompatDelegate.MODE_NIGHT_YES -> {
-                    follow_system_theme = false
-                    dark_mode = true
-                }
-                AppCompatDelegate.MODE_NIGHT_NO -> {
-                    follow_system_theme = false
-                    dark_mode = false
-                }
-            }
-            Preference.setInt(key = "default_night_mode", value)
-        }
+    const val default_night_mode = AppCompatDelegate.MODE_NIGHT_YES
 
     var terminal_font_size
         get() = Preference.getInt(key = "terminal_font_size", default = 13)
@@ -83,7 +52,7 @@ object Settings {
         set(value) = Preference.setFloat(key = "wallTransparency",value)
 
     var working_Mode
-        get() = Preference.getInt(key = "workingMode", default = WorkingMode.ALPINE)
+        get() = Preference.getInt(key = "workingMode", default = WorkingMode.UBUNTU)
         set(value) = Preference.setInt(key = "workingMode",value)
 
     var input_mode
@@ -99,10 +68,10 @@ object Settings {
         set(value) = Preference.setBoolean(key = "default_is_custom", value)
 
     var custom_background_name
-        get() = Preference.getString(key = "custom_bg_name", default = "No Image Selected")
+        get() = Preference.getString(key = "custom_bg_name", default = strings.no_image_selected.getString())
         set(value) = Preference.setString(key = "custom_bg_name",value)
     var custom_font_name
-        get() = Preference.getString(key = "custom_ttf_name", default = "No Font Selected")
+        get() = Preference.getString(key = "custom_ttf_name", default = strings.no_font_selected.getString())
         set(value) = Preference.setString(key = "custom_ttf_name",value)
 
     var background_blur

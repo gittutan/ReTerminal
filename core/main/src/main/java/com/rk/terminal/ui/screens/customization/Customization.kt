@@ -8,7 +8,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -105,7 +104,7 @@ fun Customization(
         }
 
         PreferenceGroup() {
-            PreferenceTemplate(title = { Text("Background Blur") }) {
+            PreferenceTemplate(title = { Text(stringResource(strings.background_blur)) }) {
                 Text(terminalViewModel.backgroundBlur.toInt().toString())
             }
             PreferenceTemplate(title = {}) {
@@ -126,44 +125,15 @@ fun Customization(
 
         PreferenceGroup(heading = stringResource(strings.app_theme)) {
             SettingsToggle(
-                label = stringResource(strings.follow_system_theme),
-                description = stringResource(strings.follow_system_theme_desc),
+                label = stringResource(strings.amoled),
+                description = stringResource(strings.amoled_desc),
                 showSwitch = true,
-                default = mainViewModel.followSystemTheme,
+                default = mainViewModel.isAmoled,
                 sideEffect = {
-                    Settings.follow_system_theme = it
-                    mainViewModel.followSystemTheme = it
+                    Settings.amoled = it
+                    mainViewModel.isAmoled = it
                 }
             )
-
-            if (!mainViewModel.followSystemTheme) {
-                SettingsToggle(
-                    label = stringResource(strings.dark_mode),
-                    description = stringResource(strings.dark_mode_desc),
-                    showSwitch = true,
-                    default = mainViewModel.isDarkMode,
-                    sideEffect = {
-                        Settings.dark_mode = it
-                        mainViewModel.isDarkMode = it
-                    }
-                )
-            }
-
-            val isSystemDark = isSystemInDarkTheme()
-            val isDarkActive = if (mainViewModel.followSystemTheme) isSystemDark else mainViewModel.isDarkMode
-
-            if (isDarkActive) {
-                SettingsToggle(
-                    label = stringResource(strings.amoled),
-                    description = stringResource(strings.amoled_desc),
-                    showSwitch = true,
-                    default = mainViewModel.isAmoled,
-                    sideEffect = {
-                        Settings.amoled = it
-                        mainViewModel.isAmoled = it
-                    }
-                )
-            }
 
             SettingsToggle(
                 label = stringResource(strings.monet),
@@ -179,7 +149,7 @@ fun Customization(
             if (!mainViewModel.isMonet) {
                 AccentColorPicker(
                     selectedPalette = mainViewModel.themePalette,
-                    isDarkTheme = isDarkActive,
+                    isDarkTheme = true,
                     onPaletteSelected = {
                         Settings.theme_palette = it
                         mainViewModel.themePalette = it
@@ -316,12 +286,12 @@ private fun FontSection(viewModel: TerminalViewModel) {
                     viewModel.setFont(Typeface.createFromFile(fontFile))
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    android.widget.Toast.makeText(context, "Failed to load font", android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(context, strings.font_load_failed, android.widget.Toast.LENGTH_LONG).show()
                 }
             } else {
                 android.widget.Toast.makeText(
                     context,
-                    "Failed to load font",
+                    strings.font_load_failed,
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }
@@ -345,7 +315,7 @@ private fun FontSection(viewModel: TerminalViewModel) {
                         fontExists = false
                     }
                 }) {
-                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete")
+                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(strings.delete))
                 }
             }
         }
@@ -396,21 +366,19 @@ private fun BackgroundSection(viewModel: TerminalViewModel) {
         description = { Text(backgroundName) },
         endWidget = {
             if (imageExists) {
-                val systemDark = isSystemInDarkTheme()
-                val isDarkActive = if (Settings.follow_system_theme) systemDark else Settings.dark_mode
                 IconButton(onClick = {
                     scope.launch {
                         imageFile.delete()
                         Settings.custom_background_name = noImageSelected
                         backgroundName = noImageSelected
-                        Settings.blackTextColor = !isDarkActive
-                        TerminalUtils.darkText.value = !isDarkActive
+                        Settings.blackTextColor = false
+                        TerminalUtils.darkText.value = false
                         TerminalUtils.hasCustomBackground.value = false
                         imageExists = false
                         viewModel.bitmap = null
                     }
                 }) {
-                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete")
+                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(strings.delete))
                 }
             }
         }
@@ -470,13 +438,6 @@ private fun ShortcutSection() {
 
         ShortcutAction.entries.forEach { action ->
             val binding = Settings.getShortcutBinding(action)
-            val labelRes = when (action) {
-                ShortcutAction.PASTE -> strings.shortcut_paste
-                ShortcutAction.NEW_SESSION -> strings.shortcut_new_session
-                ShortcutAction.CLOSE_SESSION -> strings.shortcut_close_session
-                ShortcutAction.SWITCH_SESSION_PREV -> strings.shortcut_switch_prev
-                ShortcutAction.SWITCH_SESSION_NEXT -> strings.shortcut_switch_next
-            }
             val descRes = when (action) {
                 ShortcutAction.PASTE -> strings.shortcut_paste_desc
                 ShortcutAction.NEW_SESSION -> strings.shortcut_new_session_desc
@@ -486,8 +447,8 @@ private fun ShortcutSection() {
             }
             SettingsToggle(
                 isEnabled = shortcutsEnabled,
-                label = stringResource(labelRes),
-                description = "${stringResource(descRes)} (${binding.toDisplayString()})",
+                label = stringResource(action.labelRes),
+                description = "${stringResource(descRes)} (${binding.toDisplayString(stringResource(strings.shortcut_not_set))})",
                 showSwitch = false,
                 default = false,
                 sideEffect = { showCaptureFor = action },
@@ -542,7 +503,7 @@ private fun VirtualKeysEditDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 120.dp, max = 300.dp),
-                    label = { Text("Layout JSON") },
+                    label = { Text(stringResource(strings.virtual_keys_json)) },
                     isError = isError,
                     supportingText = {
                         if (isError) {

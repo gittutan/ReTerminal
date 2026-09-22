@@ -33,17 +33,9 @@ class UpdateManager(private val context: Context) {
                 }
             }
 
-            val rmFile: File = localBinDir().child("rm")
-            if (rmFile.exists()) {
-                rmFile.delete()
-            }
-
-            if (rmFile.exists().not()) {
-                rmFile.createFileIfNot()
-                assets.open("rm-wrapper.sh").bufferedReader().use { it.readText() }.let {
-                    rmFile.writeText(it)
-                }
-                rmFile.setExecutable(true)
+            val initChrootFile = localBinDir().child("init-host-chroot")
+            assets.open("init-host-chroot.sh").bufferedReader().use { it.readText() }.let {
+                initChrootFile.writeText(it)
             }
         }
     }

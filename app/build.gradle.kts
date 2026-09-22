@@ -20,7 +20,7 @@ android {
         create("release") {
             val isGITHUB_ACTION = System.getenv("GITHUB_ACTIONS") == "true"
             
-            val propertiesFilePath = if (isGITHUB_ACTION) {
+            val propertiesFilePath = System.getenv("SIGNING_PROPERTIES_FILE") ?: if (isGITHUB_ACTION) {
                 "/tmp/signing.properties"
             } else {
                 "/home/rohit/Android/xed-signing/signing.properties"
@@ -38,7 +38,7 @@ android {
                     if (!alias.isNullOrBlank() && !keyPass.isNullOrBlank() && !storePass.isNullOrBlank()) {
                         keyAlias = alias
                         keyPassword = keyPass
-                        storeFile = if (isGITHUB_ACTION) {
+                        storeFile = System.getenv("KEYSTORE_FILE")?.let { File(it) } ?: if (isGITHUB_ACTION) {
                             File("/tmp/xed.keystore")
                         } else {
                             (properties["storeFile"] as String?)?.let { File(it) }

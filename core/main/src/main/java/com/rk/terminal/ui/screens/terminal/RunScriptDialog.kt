@@ -33,7 +33,7 @@ fun RunScriptDialog(
     onRun: (Int, CustomSession?) -> Unit
 ) {
     val customSessions = remember { CustomSessions.getAll() }
-    var selectedMode by remember { mutableIntStateOf(WorkingMode.ALPINE) }
+    var selectedMode by remember { mutableIntStateOf(WorkingMode.UBUNTU) }
     var selectedCustom by remember { mutableStateOf<CustomSession?>(null) }
     var selectedIsCustom by remember { mutableStateOf(false) }
 
@@ -45,7 +45,7 @@ fun RunScriptDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Run script?") },
+        title = { Text(stringResource(strings.run_script_title)) },
         text = {
             Column {
                 Text(
@@ -55,15 +55,15 @@ fun RunScriptDialog(
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = "Session type",
+                    text = stringResource(strings.session_type),
                     style = MaterialTheme.typography.labelLarge
                 )
                 Spacer(Modifier.height(8.dp))
                 ScriptSessionOption(
-                    title = "Alpine",
-                    description = stringResource(strings.alpine_desc),
-                    selected = !selectedIsCustom && selectedMode == WorkingMode.ALPINE
-                ) { select(WorkingMode.ALPINE, null, false) }
+                    title = "Ubuntu",
+                    description = stringResource(strings.ubuntu_desc),
+                    selected = !selectedIsCustom && selectedMode == WorkingMode.UBUNTU
+                ) { select(WorkingMode.UBUNTU, null, false) }
                 ScriptSessionOption(
                     title = "Android",
                     description = stringResource(strings.android_desc),
@@ -74,12 +74,12 @@ fun RunScriptDialog(
                         title = session.name,
                         description = session.shellPath,
                         selected = selectedIsCustom && selectedCustom?.id == session.id
-                    ) { select(WorkingMode.ALPINE, session, true) }
+                    ) { select(WorkingMode.UBUNTU, session, true) }
                 }
             }
         },
         confirmButton = {
-            Button(onClick = { onRun(selectedMode, selectedCustom) }) { Text("Run") }
+            Button(onClick = { onRun(selectedMode, selectedCustom) }) { Text(stringResource(strings.run)) }
         },
         dismissButton = {
             OutlinedButton(onClick = onDismiss) { Text(stringResource(strings.cancel)) }

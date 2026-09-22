@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import com.rk.libcommons.child
 import com.rk.libcommons.localDir
 import com.rk.settings.Settings
-import java.io.File
 
 enum class ExecMode(val value: Int) {
     CHROOT(0),
@@ -30,9 +29,9 @@ object Rootfs {
     }
 
     fun isRootfsInstalled(context: Context): Boolean {
-        val alpineDir = context.localDir().child("alpine")
-        val isExtracted = alpineDir.exists() && (alpineDir.list()?.any { it != "root" && it != "tmp" } == true)
-        val isArchivePresent = context.filesDir.child("alpine.tar.gz").exists()
+        val ubuntuDir = context.localDir().child("ubuntu")
+        val isExtracted = ubuntuDir.child(".rootfs-ready").isFile
+        val isArchivePresent = context.filesDir.child("ubuntu.tar.gz").let { it.isFile && it.length() > 0L }
         return isExtracted || isArchivePresent
     }
 }

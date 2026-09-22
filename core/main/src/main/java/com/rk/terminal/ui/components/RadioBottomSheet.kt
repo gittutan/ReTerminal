@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.rk.resources.strings
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 
 data class RadioOption<T>(
@@ -27,7 +29,7 @@ fun <T> RadioBottomSheet(
     options: List<RadioOption<T>>,
     selectedOption: RadioOption<T>?,
     onOptionSelected: (RadioOption<T>) -> Unit,
-    title: String = "Select an option"
+    title: String = stringResource(strings.select_option)
 ) {
     if (isVisible) {
         ModalBottomSheet(

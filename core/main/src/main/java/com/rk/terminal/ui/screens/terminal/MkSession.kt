@@ -1,7 +1,7 @@
 package com.rk.terminal.ui.screens.terminal
 
 import android.content.Context
-import com.rk.libcommons.alpineHomeDir
+import com.rk.libcommons.ubuntuHomeDir
 import com.rk.libcommons.child
 import com.rk.libcommons.createFileIfNot
 import com.rk.libcommons.localBinDir
@@ -36,7 +36,7 @@ object MkSession {
                 "EXTERNAL_STORAGE" to System.getenv("EXTERNAL_STORAGE")
             )
 
-            val workingDir = pendingCommand?.workingDir ?: alpineHomeDir().path
+            val workingDir = pendingCommand?.workingDir ?: ubuntuHomeDir().path
 
             val useChroot = Rootfs.execMode.value == ExecMode.CHROOT
 
@@ -62,16 +62,6 @@ object MkSession {
                     assets.open("init.sh").bufferedReader().use { it.readText() }.let {
                         writeText(it)
                     }
-                }
-            }
-
-            localBinDir().child("rm").apply {
-                if (exists().not()) {
-                    createFileIfNot()
-                    assets.open("rm-wrapper.sh").bufferedReader().use { it.readText() }.let {
-                        writeText(it)
-                    }
-                    setExecutable(true)
                 }
             }
 
@@ -124,9 +114,9 @@ object MkSession {
 
             val args: Array<String>
             val shell = if (pendingCommand == null) {
-                args = if (workingMode == WorkingMode.ALPINE) {
+                args = if (workingMode == WorkingMode.UBUNTU) {
                     val targetInit = if (useChroot) initChrootFile else initFile
-                    arrayOf("-c",targetInit.absolutePath)
+                    arrayOf(targetInit.absolutePath)
                 } else {
                     arrayOf()
                 }
@@ -210,12 +200,12 @@ object MkSession {
                     env = null
                 )
             }
-        } else if (workingMode == WorkingMode.ALPINE) {
+        } else if (workingMode == WorkingMode.UBUNTU) {
             val initFile = context.localBinDir()
                 .child(if (Rootfs.execMode.value == ExecMode.CHROOT) "init-host-chroot" else "init-host")
             PendingCommand(
                 shell = "/system/bin/sh",
-                args = arrayOf("-c",initFile.absolutePath,"sh",script.absolutePath),
+                args = arrayOf(initFile.absolutePath, "sh", script.absolutePath),
                 workingDir = workingDir,
                 env = null
             )

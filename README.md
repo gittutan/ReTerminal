@@ -13,7 +13,9 @@ Download the latest APK from the [Releases Section](https://github.com/RohitKush
 - [x] Basic Terminal
 - [x] Virtual Keys
 - [x] Multiple Sessions
-- [x] Alpine Linux support
+- [x] Ubuntu 22.04 LTS support (bundled Ubuntu Base 22.04.5)
+- [x] Always-dark theme
+- [x] Simplified Chinese by default
 - [x] Configurable Keyboard Shortcuts (Paste, Session Management)
 
 # Screenshots
@@ -22,6 +24,14 @@ Download the latest APK from the [Releases Section](https://github.com/RohitKush
   <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/02.jpg" width="32%" />
   <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/03.jpg" width="32%" />
 </div>
+
+## Build on macOS
+
+See [macOS APK build instructions](docs/macos-build.md) for prerequisites, debug APKs, release signing, and bundled Ubuntu image details.
+
+## GitHub Releases
+
+Push a `v*` tag to build its APK and publish it to GitHub Releases. You can also run **Android CI** manually with an existing `release_tag`. Optional `KEYSTORE` and `PROP` repository secrets configure release signing; without them the build uses the bundled testkey. See the [build instructions](docs/macos-build.md) for setup.
 
 ## Community
 > [!TIP]

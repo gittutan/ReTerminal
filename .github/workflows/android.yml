@@ -4,9 +4,23 @@ on:
     branches:
       - main
       - dev
+    tags:
+      - 'v*'
     paths-ignore:
       - '**/*.md'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing tag to build and publish (leave empty for an artifact only)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-release:
@@ -15,31 +29,36 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Decode and create xed.keystore
+      - name: Install Android build tools
         run: |
-          if [ -n "${{ secrets.KEYSTORE }}" ]; then
-            echo "${{ secrets.KEYSTORE }}" | base64 -d > /tmp/xed.keystore
-          else
-            touch /tmp/xed.keystore
-          fi
+          sdkmanager "platforms;android-37" "platforms;android-36" "ndk;29.0.13846066" "cmake;3.22.1"
+          echo "$ANDROID_HOME/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
 
-      - name: Decode and create signing.properties
+      - name: Prepare signing files
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          PROPERTIES_BASE64: ${{ secrets.PROP }}
         run: |
-          if [ -n "${{ secrets.PROP }}" ]; then
-            echo "${{ secrets.PROP }}" | base64 -d > /tmp/signing.properties
-          else
-            touch /tmp/signing.properties
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$PROPERTIES_BASE64" ]; then
+            umask 077
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/reterminal.keystore"
+            printf '%s' "$PROPERTIES_BASE64" | base64 --decode > "$RUNNER_TEMP/signing.properties"
+          elif [ -n "$KEYSTORE_BASE64" ] || [ -n "$PROPERTIES_BASE64" ]; then
+            echo "Configure both KEYSTORE and PROP secrets, or neither to use the bundled testkey."
+            exit 1
           fi
 
       - name: Grant execute permission for gradlew
@@ -50,28 +69,34 @@ jobs:
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease && mv app/build/outputs/apk/release/*.apk app/reterminal-${{ env.COMMIT_HASH }}.apk
+        run: |
+          ./gradlew :app:assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "app/reterminal-$COMMIT_HASH.apk"
         env:
-          KEYSTORE_FILE: /tmp/xed.keystore
-          SIGNING_PROPERTIES_FILE: /tmp/signing.properties
-        continue-on-error: false
+          KEYSTORE_FILE: ${{ runner.temp }}/reterminal.keystore
+          SIGNING_PROPERTIES_FILE: ${{ runner.temp }}/signing.properties
 
       - name: Archive APK
         uses: actions/upload-artifact@v4
         with:
-          name: Karbon-Release
+          name: ReTerminal-${{ env.COMMIT_HASH }}
           path: app/reterminal-${{ env.COMMIT_HASH }}.apk
+          if-no-files-found: error
 
-      - name: Delete xed.keystore and signing.properties
-        run: rm /tmp/xed.keystore /tmp/signing.properties
-
-      - name: Send APK to Telegram
+      - name: Publish APK to GitHub Release
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT }}
-        if: ${{ success() && github.event.head_commit.message != '' && env.TELEGRAM_BOT_TOKEN != '' }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
-          curl -X POST "https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendDocument" \
-          -F chat_id="-1002292589492" \
-          -F message_thread_id="116" \
-          -F caption="${{ github.event.head_commit.message }} by ${{ github.actor }}" \
-          -F document=@"app/reterminal-${{ env.COMMIT_HASH }}.apk"
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "app/reterminal-$COMMIT_HASH.apk" --clobber
+          else
+            gh release create "$RELEASE_TAG" "app/reterminal-$COMMIT_HASH.apk" \
+              --verify-tag --title "$RELEASE_TAG" --generate-notes
+          fi
+
+      - name: Delete signing files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/reterminal.keystore" "$RUNNER_TEMP/signing.properties"
