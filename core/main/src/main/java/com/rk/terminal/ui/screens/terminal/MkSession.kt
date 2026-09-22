@@ -129,7 +129,8 @@ object MkSession {
             return TerminalSession(
                 shell,
                 workingDir,
-                args,
+                // TerminalSession expects argv[0] before the command arguments.
+                arrayOf(shell, *args),
                 env.toTypedArray(),
                 TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
                 sessionClient,
