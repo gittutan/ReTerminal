@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.rk.application"
-    compileSdk = 37
+    compileSdk = 36
 
 
     dependenciesInfo {
@@ -100,7 +100,7 @@ android {
     defaultConfig {
         applicationId = "com.rk.terminal"
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 10
         versionName = "1.2.1"
         vectorDrawables {

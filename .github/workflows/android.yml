@@ -41,7 +41,7 @@ jobs:
 
       - name: Install Android build tools
         run: |
-          sdkmanager "platforms;android-37" "platforms;android-36" "ndk;29.0.13846066" "cmake;3.22.1"
+          sdkmanager "platforms;android-36" "ndk;29.0.13846066" "cmake;3.22.1"
           echo "$ANDROID_HOME/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
 
       - name: Prepare signing files
