@@ -1,18 +1,13 @@
 name: Android CI
 on:
   push:
-    branches:
-      - main
-      - dev
     tags:
       - 'v*'
-    paths-ignore:
-      - '**/*.md'
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Existing tag to build and publish (leave empty for an artifact only)'
-        required: false
+        description: 'Existing tag to build and publish to GitHub Releases'
+        required: true
         type: string
 
 permissions:
@@ -30,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
+          ref: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.sha }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -41,6 +36,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
       - name: Install Android build tools
         run: |
@@ -56,35 +53,25 @@ jobs:
             umask 077
             printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/reterminal.keystore"
             printf '%s' "$PROPERTIES_BASE64" | base64 --decode > "$RUNNER_TEMP/signing.properties"
-          elif [ -n "$KEYSTORE_BASE64" ] || [ -n "$PROPERTIES_BASE64" ]; then
-            echo "Configure both KEYSTORE and PROP secrets, or neither to use the bundled testkey."
-            exit 1
           fi
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Set Commit Hash
-        id: commit_hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> "$GITHUB_ENV"
 
       - name: Build with Gradle
         run: |
-          ./gradlew :app:assembleRelease --no-daemon
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
           cp app/build/outputs/apk/release/app-release.apk "app/reterminal-$COMMIT_HASH.apk"
         env:
           KEYSTORE_FILE: ${{ runner.temp }}/reterminal.keystore
           SIGNING_PROPERTIES_FILE: ${{ runner.temp }}/signing.properties
 
-      - name: Archive APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: ReTerminal-${{ env.COMMIT_HASH }}
-          path: app/reterminal-${{ env.COMMIT_HASH }}.apk
-          if-no-files-found: error
-
       - name: Publish APK to GitHub Release
-        if: github.ref_type == 'tag' || inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -94,7 +81,7 @@ jobs:
             gh release upload "$RELEASE_TAG" "app/reterminal-$COMMIT_HASH.apk" --clobber
           else
             gh release create "$RELEASE_TAG" "app/reterminal-$COMMIT_HASH.apk" \
-              --verify-tag --title "$RELEASE_TAG" --generate-notes
+              --title "$RELEASE_TAG" --generate-notes
           fi
 
       - name: Delete signing files
