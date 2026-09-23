@@ -23,7 +23,10 @@ fi
 if [ "$#" -eq 0 ]; then
     . /etc/profile
     export PS1='\[\033[01;32m\]\u@reterm\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-    cd "$HOME"
+    if ! cd "$HOME" 2>/dev/null; then
+        export HOME=/
+        cd /
+    fi
     if [ -f /initrc ]; then
         . /initrc
     fi

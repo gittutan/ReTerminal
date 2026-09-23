@@ -18,6 +18,15 @@ Download the latest APK from the [Releases Section](https://github.com/RohitKush
 - [x] Simplified Chinese by default
 - [x] Configurable Keyboard Shortcuts (Paste, Session Management)
 
+## Offline Ubuntu CA certificates
+
+The bundled Ubuntu 22.04 Base image does not include `ca-certificates`. On the first Ubuntu session, ReTerminal installs the following official Jammy packages offline from its APK assets (not from Android's certificate store):
+
+- `ca-certificates_20260601~22.04.1_all.deb` — SHA-256 `6e8cdcc8c86103acd4fc14649eac62ff2037108389074a7b167567af33c32245`
+- `openssl_3.0.2-0ubuntu1.29_arm64.deb` — SHA-256 `57ac2c1bc874531c81387d8842e73499203f11e997b4342540629de474c43366`
+
+These files came from Ubuntu's `jammy-updates` repository. Their checksums were verified against `Packages.xz` from an `InRelease` file signed by the Ubuntu Archive Automatic Signing Key.
+
 # Screenshots
 <div>
   <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/01.png" width="32%" />

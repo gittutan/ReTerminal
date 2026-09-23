@@ -1010,12 +1010,15 @@ static int handle_sysexit_end(Tracee *tracee, Config *config)
 
 	case PR_setgroups:
 	case PR_setgroups32:
-	case PR_getgroups:
-	case PR_getgroups32:
 		/*TODO: need to really emulate*/
 		poke_reg(tracee, SYSARG_RESULT, 0);
 		return 0;
 #endif
+
+	case PR_getgroups:
+	case PR_getgroups32:
+		poke_reg(tracee, SYSARG_RESULT, 0);
+		return 0;
 
 	case PR_setdomainname:
 	case PR_sethostname:

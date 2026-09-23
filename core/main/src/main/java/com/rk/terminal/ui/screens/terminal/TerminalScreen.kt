@@ -130,6 +130,7 @@ fun TerminalScreen(
                         sessionBinder = sessionBinder,
                         onMenuClick = { scope.launch { drawerState.open() } },
                         onAddClick = { showAddDialog = true },
+                        onFindClick = { (terminalViewModel.terminalView as? SearchableTerminalView)?.showFindDialog() },
                         color = TerminalUtils.getComposeColor()
                     )
                 }

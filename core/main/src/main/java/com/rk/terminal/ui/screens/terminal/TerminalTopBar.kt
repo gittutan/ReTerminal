@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,7 @@ fun TerminalTopBar(
     sessionBinder: SessionService.SessionBinder?,
     onMenuClick: () -> Unit,
     onAddClick: () -> Unit,
+    onFindClick: () -> Unit,
     color: Color
 ) {
     TopAppBar(
@@ -42,6 +44,9 @@ fun TerminalTopBar(
             }
         },
         actions = {
+            IconButton(onClick = onFindClick) {
+                Icon(Icons.Default.Search, stringResource(strings.terminal_find), tint = color)
+            }
             IconButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, stringResource(strings.shortcut_new_session), tint = color)
             }

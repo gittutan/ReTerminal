@@ -22,7 +22,6 @@ import com.rk.terminal.service.SessionService
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.screens.terminal.virtualkeys.*
 import com.termux.terminal.TerminalColors
-import com.termux.view.TerminalView
 import java.io.FileInputStream
 import java.util.*
 
@@ -36,7 +35,7 @@ fun TerminalViewLayout(
     Column(modifier = modifier) {
         AndroidView(
             factory = { ctx ->
-                TerminalView(ctx, null).apply {
+                SearchableTerminalView(ctx).apply {
                     viewModel.setTerminalView(this)
                     setTextSize(dpToPx(Settings.terminal_font_size.toFloat(), ctx))
                     setBackgroundColor(android.graphics.Color.TRANSPARENT)

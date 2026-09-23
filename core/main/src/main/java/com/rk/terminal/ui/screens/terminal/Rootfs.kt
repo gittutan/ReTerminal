@@ -18,4 +18,5 @@ object Rootfs {
         val isArchivePresent = context.filesDir.child("ubuntu.tar.gz").let { it.isFile && it.length() > 0L }
         return isExtracted || isArchivePresent
     }
+
 }

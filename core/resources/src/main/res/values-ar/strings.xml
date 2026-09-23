@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings">الإعدادات</string>
+    <string name="apt_mirror">مرآة حزم Ubuntu 22.04</string>
+    <string name="apt_mirror_desc">لجلسات Ubuntu الجديدة؛ تُثبَّت حزم الشهادات الرسمية دون اتصال</string>
+    <string name="apt_mirror_ustc">USTC ‏(HTTP)</string>
+    <string name="apt_mirror_tuna">Tsinghua TUNA ‏(HTTP)</string>
+    <string name="apt_mirror_aliyun">Alibaba Cloud ‏(HTTPS)</string>
+    <string name="apt_mirror_tencent">Tencent Cloud ‏(HTTPS)</string>
+    <string name="apt_mirror_ubuntu">Ubuntu الرسمي ‏(HTTP)</string>
     <string name="use_shizuku">تسجيل الدخول التلقائي إلى Shizuku</string>
     <string name="use_shizuku_desc">تنفيذ أمر rish تلقائيًا</string>
     <string name="keyboard_shortcuts">اختصارات لوحة المفاتيح</string>
     <string name="keyboard_shortcuts_desc">تفعيل اختصارات لوحة المفاتيح</string>
     <string name="shortcut_paste">لصق</string>
+    <string name="terminal_copy">نسخ</string>
+    <string name="terminal_select_all">تحديد الكل</string>
+    <string name="terminal_more">المزيد</string>
+    <string name="terminal_share">مشاركة</string>
+    <string name="terminal_find">بحث</string>
+    <string name="terminal_no_matches">لا توجد نتائج</string>
+    <string name="terminal_match_count">%1$d نتائج</string>
     <string name="shortcut_paste_desc">لصق محتوى الحافظة</string>
     <string name="shortcut_new_session">جلسة جديدة</string>
     <string name="shortcut_new_session_desc">إنشاء جلسة طرفية جديدة</string>

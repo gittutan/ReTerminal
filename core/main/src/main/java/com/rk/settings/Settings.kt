@@ -16,6 +16,9 @@ object Settings {
     var seccomp
         get() = Preference.getBoolean(key = "seccomp", default = false)
         set(value) = Preference.setBoolean(key = "seccomp",value)
+    var aptMirror
+        get() = Preference.getString(key = "apt_mirror", default = "ustc")
+        set(value) = Preference.setString(key = "apt_mirror", value)
     var amoled
         get() = Preference.getBoolean(key = "oled", default = false)
         set(value) = Preference.setBoolean(key = "oled",value)

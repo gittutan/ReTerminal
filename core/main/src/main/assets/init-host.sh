@@ -9,14 +9,22 @@ UBUNTU_DIR=$PREFIX/local/ubuntu
     if [ ! -f "$UBUNTU_DIR/.rootfs-ready" ]; then
         # Preserve rootfs absolute symlinks and emulate hard links blocked by Android.
         "$PROOT" --link2symlink /system/bin/tar -xPzf "$PREFIX/files/ubuntu.tar.gz" -C "$UBUNTU_DIR" || exit 1
-        # Ubuntu Base has no CA certificates; APT still verifies Ubuntu archive signatures.
-        sed -i \
-            -e 's|http://ports\.ubuntu\.com/ubuntu-ports/|http://mirrors.cloud.tencent.com/ubuntu-ports/|g' \
-            -e 's|http://archive\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
-            -e 's|http://security\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
-            "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
         touch "$UBUNTU_DIR/.rootfs-ready" || exit 1
     fi
+    mkdir -p "$UBUNTU_DIR/root" || exit 1
+
+    case "$APT_MIRROR" in
+        tuna) MIRROR_URL=http://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ ;;
+        aliyun) MIRROR_URL=https://mirrors.aliyun.com/ubuntu-ports/ ;;
+        tencent) MIRROR_URL=https://mirrors.cloud.tencent.com/ubuntu-ports/ ;;
+        ubuntu) MIRROR_URL=http://ports.ubuntu.com/ubuntu-ports/ ;;
+        *) MIRROR_URL=http://mirrors.ustc.edu.cn/ubuntu-ports/ ;;
+    esac
+    sed -i -E \
+        -e "s|https?://(mirrors\.cloud\.tencent\.com|mirrors\.tuna\.tsinghua\.edu\.cn|mirrors\.ustc\.edu\.cn|mirrors\.aliyun\.com|ports\.ubuntu\.com)/ubuntu-ports/|$MIRROR_URL|g" \
+        -e "s|https?://mirrors\.cloud\.tencent\.com/ubuntu/|$MIRROR_URL|g" \
+        -e "s|https?://(archive|security)\.ubuntu\.com/ubuntu/|$MIRROR_URL|g" \
+        "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
 ) 9>"$PREFIX/local/.ubuntu-rootfs.lock" || exit 1
 
 ARGS="--kill-on-exit"
@@ -75,5 +83,28 @@ ARGS="$ARGS -0"
 ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
+
+if ! (
+    /system/bin/flock -x 9 || exit 1
+    CA_READY="$UBUNTU_DIR/.reterminal-ca-20260601-ready"
+    if [ -f "$CA_READY" ]; then
+        exit 0
+    fi
+    if [ -s "$UBUNTU_DIR/etc/ssl/certs/ca-certificates.crt" ] &&
+       [ "$("$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' ca-certificates 2>/dev/null)" = 'install ok installed' ]; then
+        touch "$CA_READY"
+    else
+        OFFLINE_PACKAGES="$PREFIX/files/ca-certificates_20260601~22.04.1_all.deb"
+        if [ "$("$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' openssl 2>/dev/null)" != 'install ok installed' ]; then
+            OFFLINE_PACKAGES="$PREFIX/files/openssl_3.0.2-0ubuntu1.29_arm64.deb $OFFLINE_PACKAGES"
+        fi
+        DEBIAN_FRONTEND=noninteractive "$PROOT" $ARGS /usr/bin/dpkg -i \
+            $OFFLINE_PACKAGES &&
+        [ -s "$UBUNTU_DIR/etc/ssl/certs/ca-certificates.crt" ] &&
+        touch "$CA_READY"
+    fi
+) 9>"$PREFIX/local/.ubuntu-rootfs.lock"; then
+    echo 'Offline Ubuntu CA installation failed; select an HTTP mirror in settings.' >&2
+fi
 
 "$PROOT" $ARGS /bin/sh "$PREFIX/local/bin/init" "$@"

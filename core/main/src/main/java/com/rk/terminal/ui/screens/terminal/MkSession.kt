@@ -3,7 +3,6 @@ package com.rk.terminal.ui.screens.terminal
 import android.content.Context
 import com.rk.libcommons.ubuntuHomeDir
 import com.rk.libcommons.child
-import com.rk.libcommons.createFileIfNot
 import com.rk.libcommons.localBinDir
 import com.rk.libcommons.localDir
 import com.rk.libcommons.localLibDir
@@ -39,6 +38,22 @@ object MkSession {
 
             val workingDir = pendingCommand?.workingDir ?: ubuntuHomeDir().path
 
+            if (workingMode == WorkingMode.UBUNTU) {
+                listOf(
+                    "openssl_3.0.2-0ubuntu1.29_arm64.deb",
+                    "ca-certificates_20260601~22.04.1_all.deb"
+                ).forEach { name ->
+                    val target = filesDir.child(name)
+                    if (!target.isFile || target.length() == 0L) {
+                        val temporary = filesDir.child("$name.part")
+                        assets.open(name).use { input ->
+                            temporary.outputStream().use { output -> input.copyTo(output) }
+                        }
+                        check(temporary.renameTo(target)) { "Unable to save offline package: $name" }
+                    }
+                }
+            }
+
             val initFile: File = localBinDir().child("init-host")
             val initScript = assets.open("init-host.sh").bufferedReader().use { it.readText() }
             if (initFile.exists().not() || initFile.readText() != initScript) {
@@ -46,11 +61,9 @@ object MkSession {
             }
 
             localBinDir().child("init").apply {
-                if (exists().not()) {
-                    createFileIfNot()
-                    assets.open("init.sh").bufferedReader().use { it.readText() }.let {
-                        writeText(it)
-                    }
+                val script = assets.open("init.sh").bufferedReader().use { it.readText() }
+                if (!exists() || readText() != script) {
+                    writeText(script)
                 }
             }
 
@@ -61,6 +74,7 @@ object MkSession {
                 "COLORTERM=truecolor",
                 "TERM=xterm-256color",
                 "LANG=C.UTF-8",
+                "APT_MIRROR=${Settings.aptMirror}",
                 "BIN=${localBinDir()}",
                 "DEBUG=${BuildConfig.DEBUG}",
                 "PREFIX=${filesDir.parentFile!!.path}",

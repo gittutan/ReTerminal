@@ -26,6 +26,8 @@ import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.components.SettingsToggle
+import com.rk.terminal.ui.components.RadioBottomSheet
+import com.rk.terminal.ui.components.RadioOption
 import com.rk.terminal.ui.routes.MainActivityRoutes
 import com.rk.terminal.ui.screens.terminal.CustomSessions
 
@@ -81,6 +83,15 @@ fun Settings(
     val context = LocalContext.current
     var selectedWorkingMode by remember { mutableIntStateOf(Settings.working_Mode) }
     var selectedInputMode by remember { mutableIntStateOf(Settings.input_mode) }
+    var selectedAptMirror by remember { mutableStateOf(Settings.aptMirror) }
+    var showAptMirrors by remember { mutableStateOf(false) }
+    val aptMirrors = listOf(
+        RadioOption("ustc", stringResource(strings.apt_mirror_ustc), "http://mirrors.ustc.edu.cn/ubuntu-ports/"),
+        RadioOption("tuna", stringResource(strings.apt_mirror_tuna), "http://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/"),
+        RadioOption("aliyun", stringResource(strings.apt_mirror_aliyun), "https://mirrors.aliyun.com/ubuntu-ports/"),
+        RadioOption("tencent", stringResource(strings.apt_mirror_tencent), "https://mirrors.cloud.tencent.com/ubuntu-ports/"),
+        RadioOption("ubuntu", stringResource(strings.apt_mirror_ubuntu), "http://ports.ubuntu.com/ubuntu-ports/")
+    )
     var customSessions by remember { mutableStateOf(CustomSessions.getAll()) }
     var showAddCustomSession by remember { mutableStateOf(false) }
     var defaultIsCustom by remember { mutableStateOf(Settings.default_is_custom) }
@@ -187,6 +198,11 @@ fun Settings(
         }
 
         PreferenceGroup {
+            SettingsCard(
+                title = { Text(stringResource(strings.apt_mirror)) },
+                description = { Text((aptMirrors.firstOrNull { it.id == selectedAptMirror } ?: aptMirrors.first()).label + " · " + stringResource(strings.apt_mirror_desc)) },
+                onClick = { showAptMirrors = true }
+            )
             SettingsToggle(
                 label = stringResource(strings.seccomp),
                 description = stringResource(strings.seccomp_desc),
@@ -228,6 +244,18 @@ fun Settings(
             }
         )
     }
+    RadioBottomSheet(
+        isVisible = showAptMirrors,
+        onDismiss = { showAptMirrors = false },
+        options = aptMirrors,
+        selectedOption = aptMirrors.firstOrNull { it.id == selectedAptMirror },
+        onOptionSelected = {
+            selectedAptMirror = it.id
+            Settings.aptMirror = it.id
+            showAptMirrors = false
+        },
+        title = stringResource(strings.apt_mirror)
+    )
 }
 
 @Composable
