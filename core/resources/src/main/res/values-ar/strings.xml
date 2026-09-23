@@ -16,6 +16,7 @@
     <string name="terminal_copy">نسخ</string>
     <string name="terminal_select_all">تحديد الكل</string>
     <string name="terminal_more">المزيد</string>
+    <string name="terminal_restart_failed">تعذرت إعادة تشغيل الجلسة. أنشئ جلسة جديدة من القائمة.</string>
     <string name="terminal_share">مشاركة</string>
     <string name="terminal_find">بحث</string>
     <string name="terminal_no_matches">لا توجد نتائج</string>

@@ -110,6 +110,7 @@
     <string name="terminal_copy">复制</string>
     <string name="terminal_select_all">全选</string>
     <string name="terminal_more">更多</string>
+    <string name="terminal_restart_failed">无法重新启动会话，请从菜单新建会话</string>
     <string name="terminal_share">分享</string>
     <string name="terminal_find">查找</string>
     <string name="terminal_no_matches">没有匹配结果</string>

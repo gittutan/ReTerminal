@@ -26,6 +26,7 @@ import com.termux.terminal.TerminalSessionClient
 
 class SessionService : Service() {
     private val sessions = hashMapOf<String, TerminalSession>()
+    private val pendingCommands = hashMapOf<String, PendingCommand?>()
     val sessionList = mutableStateMapOf<String, Int>()
     val sessionOrder = mutableStateListOf<String>()
     private val initialMode = CustomSessions.resolveDefaultSession()
@@ -38,6 +39,7 @@ class SessionService : Service() {
         fun terminateAllSessions() {
             sessions.values.forEach { it.finishIfRunning() }
             sessions.clear()
+            pendingCommands.clear()
             sessionList.clear()
             sessionOrder.clear()
             updateNotification()
@@ -57,6 +59,7 @@ class SessionService : Service() {
                 pendingCommand = pendingCommand
             ).also {
                 sessions[id] = it
+                pendingCommands[id] = pendingCommand
                 sessionList[id] = workingMode
                 if (!sessionOrder.contains(id)) {
                     sessionOrder.add(id)
@@ -67,6 +70,12 @@ class SessionService : Service() {
 
         fun getSession(id: String): TerminalSession? = sessions[id]
 
+        fun restartSession(id: String, client: TerminalSessionClient): TerminalSession? {
+            val session = sessions[id] ?: return null
+            if (session.isRunning) return session
+            return createSession(id, client, sessionList[id] ?: currentSession.value.second, pendingCommands[id])
+        }
+
         fun renameSession(oldId: String, newId: String): Boolean {
             val trimmed = newId.trim()
             if (trimmed.isEmpty()) return false
@@ -76,6 +85,7 @@ class SessionService : Service() {
             val session = sessions.remove(oldId) ?: return false
             val mode = sessionList.remove(oldId) ?: com.rk.settings.Settings.working_Mode
             sessions[trimmed] = session
+            pendingCommands[trimmed] = pendingCommands.remove(oldId)
             sessionList[trimmed] = mode
 
             val idx = sessionOrder.indexOf(oldId)
@@ -111,6 +121,7 @@ class SessionService : Service() {
                 }
             }
             sessions.remove(id)
+            pendingCommands.remove(id)
             sessionList.remove(id)
             sessionOrder.remove(id)
             if (sessions.isEmpty()) {

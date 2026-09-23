@@ -6,11 +6,13 @@ import android.media.MediaPlayer
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.rk.libcommons.child
+import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.screens.terminal.virtualkeys.SpecialButton
@@ -121,13 +123,19 @@ class TerminalBackEnd(
             val binder = activity.viewModel.sessionBinder ?: return false
             val service = binder.getService()
             val currentId = service.currentSession.value.first
-            
-            binder.terminateSession(currentId)
-            
-            if (service.sessionList.isEmpty()) {
-                activity.finish()
+            val nextId = service.sessionList.keys.firstOrNull { it != currentId }
+
+            if (nextId == null) {
+                runCatching {
+                    checkNotNull(binder.restartSession(currentId, this))
+                    terminalViewModel.changeSession(activity, binder, currentId)
+                }.onFailure {
+                    Log.e("Terminal", "Unable to restart session", it)
+                    Toast.makeText(activity, strings.terminal_restart_failed, Toast.LENGTH_LONG).show()
+                }
             } else {
-                terminalViewModel.changeSession(activity, binder, service.sessionList.keys.first())
+                binder.terminateSession(currentId)
+                terminalViewModel.changeSession(activity, binder, nextId)
             }
             return true
         }

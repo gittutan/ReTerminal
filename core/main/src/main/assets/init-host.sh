@@ -20,11 +20,18 @@ UBUNTU_DIR=$PREFIX/local/ubuntu
         ubuntu) MIRROR_URL=http://ports.ubuntu.com/ubuntu-ports/ ;;
         *) MIRROR_URL=http://mirrors.ustc.edu.cn/ubuntu-ports/ ;;
     esac
-    sed -i -E \
-        -e "s|https?://(mirrors\.cloud\.tencent\.com|mirrors\.tuna\.tsinghua\.edu\.cn|mirrors\.ustc\.edu\.cn|mirrors\.aliyun\.com|ports\.ubuntu\.com)/ubuntu-ports/|$MIRROR_URL|g" \
-        -e "s|https?://mirrors\.cloud\.tencent\.com/ubuntu/|$MIRROR_URL|g" \
-        -e "s|https?://(archive|security)\.ubuntu\.com/ubuntu/|$MIRROR_URL|g" \
-        "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
+    if ! sed -i \
+        -e "s#https*://mirrors\.cloud\.tencent\.com/ubuntu-ports/#$MIRROR_URL#g" \
+        -e "s#https*://mirrors\.tuna\.tsinghua\.edu\.cn/ubuntu-ports/#$MIRROR_URL#g" \
+        -e "s#https*://mirrors\.ustc\.edu\.cn/ubuntu-ports/#$MIRROR_URL#g" \
+        -e "s#https*://mirrors\.aliyun\.com/ubuntu-ports/#$MIRROR_URL#g" \
+        -e "s#https*://ports\.ubuntu\.com/ubuntu-ports/#$MIRROR_URL#g" \
+        -e "s#https*://mirrors\.cloud\.tencent\.com/ubuntu/#$MIRROR_URL#g" \
+        -e "s#https*://archive\.ubuntu\.com/ubuntu/#$MIRROR_URL#g" \
+        -e "s#https*://security\.ubuntu\.com/ubuntu/#$MIRROR_URL#g" \
+        "$UBUNTU_DIR/etc/apt/sources.list"; then
+        echo 'Unable to update Ubuntu sources; continuing with existing sources.' >&2
+    fi
 ) 9>"$PREFIX/local/.ubuntu-rootfs.lock" || exit 1
 
 ARGS="--kill-on-exit"

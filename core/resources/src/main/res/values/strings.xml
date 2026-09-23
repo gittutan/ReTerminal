@@ -110,6 +110,7 @@
     <string name="terminal_copy">Copy</string>
     <string name="terminal_select_all">Select all</string>
     <string name="terminal_more">More</string>
+    <string name="terminal_restart_failed">Could not restart the session. Create a new one from the menu.</string>
     <string name="terminal_share">Share</string>
     <string name="terminal_find">Find</string>
     <string name="terminal_no_matches">No matches</string>
