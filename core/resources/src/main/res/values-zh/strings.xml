@@ -89,9 +89,6 @@
     <string name="move_down">下移</string>
     <string name="name_already_exists">已存在同名会话</string>
     <string name="name_cannot_be_empty">名称不能为空</string>
-    <string name="execution_mode">执行模式</string>
-    <string name="chroot_desc">需要 root 权限，速度更快，使用 bind mount</string>
-    <string name="proot_desc">无需 root 权限，速度稍慢</string>
     <string name="custom_sessions">自定义会话</string>
     <string name="add_custom_session">添加自定义会话</string>
     <string name="new_custom_session">新建自定义会话</string>
@@ -106,9 +103,6 @@
     <string name="run_script_title">运行脚本？</string>
     <string name="session_type">会话类型</string>
     <string name="run">运行</string>
-    <string name="root_detected">检测到 root 权限</string>
-    <string name="root_detected_desc">可选择 chroot（速度更快，每次会话都需要 root 权限）或 PRoot（无需 root 权限，速度稍慢）。之后可在设置中更改。</string>
-    <string name="checking_root">正在检查 root 权限…</string>
     <string name="unsupported_cpu_architectures">不支持的 CPU 架构：%1$s</string>
     <string name="unsupported_abi">不支持的 ABI：%1$s</string>
     <string name="rootfs_save_failed">无法保存 Ubuntu rootfs</string>

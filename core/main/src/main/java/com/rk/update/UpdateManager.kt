@@ -33,10 +33,7 @@ class UpdateManager(private val context: Context) {
                 }
             }
 
-            val initChrootFile = localBinDir().child("init-host-chroot")
-            assets.open("init-host-chroot.sh").bufferedReader().use { it.readText() }.let {
-                initChrootFile.writeText(it)
-            }
+            localBinDir().child("init-host-chroot").delete()
         }
     }
 }

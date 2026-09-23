@@ -7,6 +7,7 @@ import com.rk.libcommons.createFileIfNot
 import com.rk.libcommons.localBinDir
 import com.rk.libcommons.localDir
 import com.rk.libcommons.localLibDir
+import com.rk.settings.Settings
 import com.rk.terminal.App.Companion.getTempDir
 import com.rk.terminal.BuildConfig
 import com.rk.terminal.ui.screens.settings.WorkingMode
@@ -38,22 +39,10 @@ object MkSession {
 
             val workingDir = pendingCommand?.workingDir ?: ubuntuHomeDir().path
 
-            val useChroot = Rootfs.execMode.value == ExecMode.CHROOT
-
             val initFile: File = localBinDir().child("init-host")
-            if (initFile.exists().not()) {
-                initFile.createFileIfNot()
-                assets.open("init-host.sh").bufferedReader().use { it.readText() }.let {
-                    initFile.writeText(it)
-                }
-            }
-
-            val initChrootFile: File = localBinDir().child("init-host-chroot")
-            if (useChroot && initChrootFile.exists().not()) {
-                initChrootFile.createFileIfNot()
-                assets.open("init-host-chroot.sh").bufferedReader().use { it.readText() }.let {
-                    initChrootFile.writeText(it)
-                }
+            val initScript = assets.open("init-host.sh").bufferedReader().use { it.readText() }
+            if (initFile.exists().not() || initFile.readText() != initScript) {
+                initFile.writeText(initScript)
             }
 
             localBinDir().child("init").apply {
@@ -76,7 +65,7 @@ object MkSession {
                 "DEBUG=${BuildConfig.DEBUG}",
                 "PREFIX=${filesDir.parentFile!!.path}",
                 "LD_LIBRARY_PATH=${localLibDir().absolutePath}",
-                "LINKER=${if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+                "LINKER=/system/bin/linker64",
                 "NATIVE_LIB_DIR=${applicationInfo.nativeLibraryDir}",
                 "PKG=${packageName}",
                 "RISH_APPLICATION_ID=${packageName}",
@@ -85,13 +74,10 @@ object MkSession {
                 "TMPDIR=${getTempDir(this).absolutePath}",
                 "PROOT_LOADER=${applicationInfo.nativeLibraryDir}/libloader.so",
                 "PROOT=${applicationInfo.nativeLibraryDir}/libproot.so",
-                "CHROOT=${if (File("/system/bin/chroot").exists()) "/system/bin/chroot" else "/system/xbin/chroot"}",
-                "USE_CHROOT=${if (useChroot) "1" else "0"}",
             )
 
-            val loader32 = "${applicationInfo.nativeLibraryDir}/libloader32.so"
-            if (File(loader32).exists()) {
-                env.add("PROOT_LOADER_32=$loader32")
+            if (Settings.seccomp) {
+                env.add("PROOT_NO_SECCOMP=1")
             }
 
             env.addAll(envVariables.map { "${it.key}=${it.value}" })
@@ -115,8 +101,7 @@ object MkSession {
             val args: Array<String>
             val shell = if (pendingCommand == null) {
                 args = if (workingMode == WorkingMode.UBUNTU) {
-                    val targetInit = if (useChroot) initChrootFile else initFile
-                    arrayOf(targetInit.absolutePath)
+                    arrayOf(initFile.absolutePath)
                 } else {
                     arrayOf()
                 }
@@ -202,8 +187,7 @@ object MkSession {
                 )
             }
         } else if (workingMode == WorkingMode.UBUNTU) {
-            val initFile = context.localBinDir()
-                .child(if (Rootfs.execMode.value == ExecMode.CHROOT) "init-host-chroot" else "init-host")
+            val initFile = context.localBinDir().child("init-host")
             PendingCommand(
                 shell = "/system/bin/sh",
                 args = arrayOf(initFile.absolutePath, "sh", script.absolutePath),

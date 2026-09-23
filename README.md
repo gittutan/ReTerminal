@@ -13,7 +13,7 @@ Download the latest APK from the [Releases Section](https://github.com/RohitKush
 - [x] Basic Terminal
 - [x] Virtual Keys
 - [x] Multiple Sessions
-- [x] Ubuntu 22.04 LTS support (bundled Ubuntu Base 22.04.5)
+- [x] Ubuntu 22.04 LTS support (bundled Ubuntu Base 22.04.5, ARM64 only)
 - [x] Always-dark theme
 - [x] Simplified Chinese by default
 - [x] Configurable Keyboard Shortcuts (Paste, Session Management)

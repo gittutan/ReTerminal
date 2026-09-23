@@ -59,10 +59,6 @@ object Settings {
         get() = Preference.getInt(key = "input_mode", default = InputMode.DEFAULT)
         set(value) = Preference.setInt(key = "input_mode", value)
 
-    var exec_mode
-        get() = Preference.getInt(key = "exec_mode", default = -1)
-        set(value) = Preference.setInt(key = "exec_mode", value)
-
     var default_is_custom
         get() = Preference.getBoolean(key = "default_is_custom", default = false)
         set(value) = Preference.setBoolean(key = "default_is_custom", value)

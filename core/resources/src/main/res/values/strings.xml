@@ -89,9 +89,6 @@
     <string name="move_down">Move Down</string>
     <string name="name_already_exists">A session with this name already exists</string>
     <string name="name_cannot_be_empty">Name cannot be empty</string>
-    <string name="execution_mode">Execution Mode</string>
-    <string name="chroot_desc">Requires root, faster, uses bind mounts</string>
-    <string name="proot_desc">No root required, slightly slower</string>
     <string name="custom_sessions">Custom Sessions</string>
     <string name="add_custom_session">Add Custom Session</string>
     <string name="new_custom_session">New Custom Session</string>
@@ -106,9 +103,6 @@
     <string name="run_script_title">Run script?</string>
     <string name="session_type">Session type</string>
     <string name="run">Run</string>
-    <string name="root_detected">Root Access Detected</string>
-    <string name="root_detected_desc">Root access was found. Use chroot (faster, requires root for every session) or PRoot (no root required, slightly slower). You can change this later in Settings.</string>
-    <string name="checking_root">Checking root access…</string>
     <string name="unsupported_cpu_architectures">Unsupported CPU architectures: %1$s</string>
     <string name="unsupported_abi">Unsupported ABI: %1$s</string>
     <string name="rootfs_save_failed">Unable to save Ubuntu rootfs</string>

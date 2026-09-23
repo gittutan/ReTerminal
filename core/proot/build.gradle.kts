@@ -11,6 +11,9 @@ android {
 
     defaultConfig {
         minSdk = 26
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

@@ -28,8 +28,6 @@ import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.components.SettingsToggle
 import com.rk.terminal.ui.routes.MainActivityRoutes
 import com.rk.terminal.ui.screens.terminal.CustomSessions
-import com.rk.terminal.ui.screens.terminal.ExecMode
-import com.rk.terminal.ui.screens.terminal.Rootfs
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -83,7 +81,6 @@ fun Settings(
     val context = LocalContext.current
     var selectedWorkingMode by remember { mutableIntStateOf(Settings.working_Mode) }
     var selectedInputMode by remember { mutableIntStateOf(Settings.input_mode) }
-    var selectedExecMode by remember { mutableStateOf(Rootfs.execMode.value) }
     var customSessions by remember { mutableStateOf(CustomSessions.getAll()) }
     var showAddCustomSession by remember { mutableStateOf(false) }
     var defaultIsCustom by remember { mutableStateOf(Settings.default_is_custom) }
@@ -126,17 +123,6 @@ fun Settings(
                     Settings.default_is_custom = true
                     CustomSessions.setDefault(session.id)
                 }
-            }
-        }
-
-        PreferenceGroup(heading = stringResource(strings.execution_mode)) {
-            ExecModeOption("chroot", stringResource(strings.chroot_desc), ExecMode.CHROOT, selectedExecMode) {
-                selectedExecMode = it
-                Rootfs.setExecMode(it)
-            }
-            ExecModeOption("PRoot", stringResource(strings.proot_desc), ExecMode.PROOT, selectedExecMode) {
-                selectedExecMode = it
-                Rootfs.setExecMode(it)
             }
         }
 
@@ -262,22 +248,6 @@ private fun WorkingModeOption(title: String, description: String, selected: Bool
 
 @Composable
 private fun InputModeOption(title: String, description: String, mode: Int, currentMode: Int, onSelect: (Int) -> Unit) {
-    SettingsCard(
-        title = { Text(title) },
-        description = { Text(description) },
-        startWidget = {
-            RadioButton(
-                modifier = Modifier.padding(start = 8.dp),
-                selected = currentMode == mode,
-                onClick = { onSelect(mode) }
-            )
-        },
-        onClick = { onSelect(mode) }
-    )
-}
-
-@Composable
-private fun ExecModeOption(title: String, description: String, mode: ExecMode, currentMode: ExecMode?, onSelect: (ExecMode) -> Unit) {
     SettingsCard(
         title = { Text(title) },
         description = { Text(description) },

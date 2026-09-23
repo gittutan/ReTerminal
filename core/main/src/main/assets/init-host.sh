@@ -1,17 +1,23 @@
 UBUNTU_DIR=$PREFIX/local/ubuntu
 
-mkdir -p "$UBUNTU_DIR" || exit 1
+# All sessions share this lock; closing the descriptors releases it even after a crash.
+# Keep the lock file so every session locks the same inode.
+(
+    /system/bin/flock -x 9 || exit 1
+    mkdir -p "$UBUNTU_DIR" || exit 1
 
-if [ ! -f "$UBUNTU_DIR/.rootfs-ready" ]; then
-    tar -xzf "$PREFIX/files/ubuntu.tar.gz" -C "$UBUNTU_DIR" || exit 1
-    # Ubuntu Base has no CA certificates; APT still verifies Ubuntu archive signatures.
-    sed -i \
-        -e 's|http://ports\.ubuntu\.com/ubuntu-ports/|http://mirrors.cloud.tencent.com/ubuntu-ports/|g' \
-        -e 's|http://archive\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
-        -e 's|http://security\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
-        "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
-    touch "$UBUNTU_DIR/.rootfs-ready" || exit 1
-fi
+    if [ ! -f "$UBUNTU_DIR/.rootfs-ready" ]; then
+        # Preserve rootfs absolute symlinks and emulate hard links blocked by Android.
+        "$PROOT" --link2symlink /system/bin/tar -xPzf "$PREFIX/files/ubuntu.tar.gz" -C "$UBUNTU_DIR" || exit 1
+        # Ubuntu Base has no CA certificates; APT still verifies Ubuntu archive signatures.
+        sed -i \
+            -e 's|http://ports\.ubuntu\.com/ubuntu-ports/|http://mirrors.cloud.tencent.com/ubuntu-ports/|g' \
+            -e 's|http://archive\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
+            -e 's|http://security\.ubuntu\.com/ubuntu/|http://mirrors.cloud.tencent.com/ubuntu/|g' \
+            "$UBUNTU_DIR/etc/apt/sources.list" || exit 1
+        touch "$UBUNTU_DIR/.rootfs-ready" || exit 1
+    fi
+) 9>"$PREFIX/local/.ubuntu-rootfs.lock" || exit 1
 
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
