@@ -36,66 +36,68 @@ fun TerminalViewLayout(
         AndroidView(
             factory = { ctx ->
                 SearchableTerminalView(ctx).apply {
-                    viewModel.setTerminalView(this)
-                    setTextSize(dpToPx(Settings.terminal_font_size.toFloat(), ctx))
-                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    terminal.apply {
+                        viewModel.setTerminalView(this)
+                        setTextSize(dpToPx(Settings.terminal_font_size.toFloat(), ctx))
+                        setBackgroundColor(android.graphics.Color.TRANSPARENT)
 
-                    val client = TerminalBackEnd(this, mainActivity)
-                    val service = sessionBinder.getService()
+                        val client = TerminalBackEnd(this, mainActivity)
+                        val service = sessionBinder.getService()
 
-                    val session = sessionBinder.getSession(service.currentSession.value.first)
-                        ?: run {
-                            val custom = service.currentCustomSession
-                            if (custom != null) {
-                                val pendingCommand = MkSession.buildCustomPendingCommand(ctx, custom)
-                                sessionBinder.createSession(
-                                    service.currentSession.value.first,
-                                    client,
-                                    service.currentSession.value.second,
-                                    pendingCommand
-                                )
-                            } else {
-                                sessionBinder.createSession(
-                                    service.currentSession.value.first,
-                                    client,
-                                    Settings.working_Mode
-                                )
+                        val session = sessionBinder.getSession(service.currentSession.value.first)
+                            ?: run {
+                                val custom = service.currentCustomSession
+                                if (custom != null) {
+                                    val pendingCommand = MkSession.buildCustomPendingCommand(ctx, custom)
+                                    sessionBinder.createSession(
+                                        service.currentSession.value.first,
+                                        client,
+                                        service.currentSession.value.second,
+                                        pendingCommand
+                                    )
+                                } else {
+                                    sessionBinder.createSession(
+                                        service.currentSession.value.first,
+                                        client,
+                                        Settings.working_Mode
+                                    )
+                                }
                             }
-                        }
 
-                    session.updateTerminalSessionClient(client)
-                    attachSession(session)
-                    setTerminalViewClient(client)
-                    setTypeface(TerminalUtils.typeface)
+                        session.updateTerminalSessionClient(client)
+                        attachSession(session)
+                        setTerminalViewClient(client)
+                        setTypeface(TerminalUtils.typeface)
 
-                    post {
-                        val color = TerminalUtils.getViewColor()
-                        val bgColor = TerminalUtils.getBackgroundColor()
-                        keepScreenOn = true
-                        requestFocus()
-                        isFocusableInTouchMode = true
+                        post {
+                            val color = TerminalUtils.getViewColor()
+                            val bgColor = TerminalUtils.getBackgroundColor()
+                            keepScreenOn = true
+                            requestFocus()
+                            isFocusableInTouchMode = true
 
-                        mEmulator?.mColors?.mCurrentColors?.apply {
-                            set(256, color)
-                            set(257, bgColor)
-                            set(258, color)
-                        }
+                            mEmulator?.mColors?.mCurrentColors?.apply {
+                                set(256, color)
+                                set(257, bgColor)
+                                set(258, color)
+                            }
 
-                        val colorsFile = ctx.localDir().child("colors.properties")
-                        if (colorsFile.exists() && colorsFile.isFile) {
-                            val props = Properties()
-                            FileInputStream(colorsFile).use { props.load(it) }
-                            TerminalColors.COLOR_SCHEME.updateWith(props)
+                            val colorsFile = ctx.localDir().child("colors.properties")
+                            if (colorsFile.exists() && colorsFile.isFile) {
+                                val props = Properties()
+                                FileInputStream(colorsFile).use { props.load(it) }
+                                TerminalColors.COLOR_SCHEME.updateWith(props)
+                            }
                         }
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth().weight(1f),
             update = { view ->
-                view.onScreenUpdated()
+                view.terminal.onScreenUpdated()
                 val color = TerminalUtils.getViewColor()
                 val bgColor = TerminalUtils.getBackgroundColor()
-                view.mEmulator?.mColors?.mCurrentColors?.apply {
+                view.terminal.mEmulator?.mColors?.mCurrentColors?.apply {
                     set(256, color)
                     set(257, bgColor)
                     set(258, color)
