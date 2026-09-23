@@ -91,27 +91,30 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-if ! (
+(
     /system/bin/flock -x 9 || exit 1
+    UBUNTU_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
     CA_READY="$UBUNTU_DIR/.reterminal-ca-20260601-ready"
-    if [ -f "$CA_READY" ]; then
+    CERT_BUNDLE="$UBUNTU_DIR/etc/ssl/certs/ca-certificates.crt"
+    if [ -f "$CA_READY" ] && [ -s "$CERT_BUNDLE" ]; then
         exit 0
     fi
-    if [ -s "$UBUNTU_DIR/etc/ssl/certs/ca-certificates.crt" ] &&
-       [ "$("$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' ca-certificates 2>/dev/null)" = 'install ok installed' ]; then
+    if [ -s "$CERT_BUNDLE" ] &&
+       [ "$(PATH="$UBUNTU_PATH" "$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' ca-certificates 2>/dev/null)" = 'install ok installed' ]; then
         touch "$CA_READY"
     else
         OFFLINE_PACKAGES="$PREFIX/files/ca-certificates_20260601~22.04.1_all.deb"
-        if [ "$("$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' openssl 2>/dev/null)" != 'install ok installed' ]; then
+        if [ "$(PATH="$UBUNTU_PATH" "$PROOT" $ARGS /usr/bin/dpkg-query -W -f='${Status}' openssl 2>/dev/null)" != 'install ok installed' ]; then
             OFFLINE_PACKAGES="$PREFIX/files/openssl_3.0.2-0ubuntu1.29_arm64.deb $OFFLINE_PACKAGES"
         fi
-        DEBIAN_FRONTEND=noninteractive "$PROOT" $ARGS /usr/bin/dpkg -i \
-            $OFFLINE_PACKAGES &&
-        [ -s "$UBUNTU_DIR/etc/ssl/certs/ca-certificates.crt" ] &&
-        touch "$CA_READY"
+        if DEBIAN_FRONTEND=noninteractive PATH="$UBUNTU_PATH" "$PROOT" $ARGS /usr/bin/dpkg -i $OFFLINE_PACKAGES; then
+            if [ -s "$CERT_BUNDLE" ]; then
+                touch "$CA_READY"
+            else
+                echo "Certificate bundle missing or empty after dpkg -i: $CERT_BUNDLE" >&2
+            fi
+        fi
     fi
-) 9>"$PREFIX/local/.ubuntu-rootfs.lock"; then
-    echo 'Offline Ubuntu CA installation failed; select an HTTP mirror in settings.' >&2
-fi
+) 9>"$PREFIX/local/.ubuntu-rootfs.lock"
 
 "$PROOT" $ARGS /bin/sh "$PREFIX/local/bin/init" "$@"

@@ -39,8 +39,7 @@ object TerminalUtils {
         else -> "unknown"
     }
 
-    const val stat = """
-cpu  1957 0 2877 93280 262 342 254 87 0 0
+    const val stat = """cpu  1957 0 2877 93280 262 342 254 87 0 0
 cpu0 31 0 226 12027 82 10 4 9 0 0
 cpu1 45 0 664 11144 21 263 233 12 0 0
 cpu2 494 0 537 11283 27 10 3 8 0 0

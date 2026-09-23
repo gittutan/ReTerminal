@@ -97,7 +97,7 @@ object MkSession {
             env.addAll(envVariables.map { "${it.key}=${it.value}" })
 
             localDir().child("stat").apply {
-                if (exists().not()) {
+                if (!exists() || readText() != TerminalUtils.stat) {
                     writeText(TerminalUtils.stat)
                 }
             }
